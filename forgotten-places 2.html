@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forgotten Places — App Prototype</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500..700&family=DM+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{--ink:#1C2526;--paper:#F4EEE3;--sand:#E9E0CF;--card:#FBF8F2;--terra:#A9441F;--teal:#2C6E6A;--muted:#55605F;--line:#DCD2C0;
+--green:#3E8E5A;--yellow:#D9A520;--red:#C0392B;--blue:#2F6FB0;}
+*{box-sizing:border-box}
+html,body{margin:0;background:#D9D0BF;font-family:'DM Sans',Arial,sans-serif;color:var(--ink);}
+button,input,select,textarea{font:inherit;color:inherit}
+.app{max-width:440px;min-height:100vh;margin:0 auto;background:var(--paper);display:flex;flex-direction:column;position:relative;box-shadow:0 0 40px rgba(0,0,0,.12)}
+header{position:sticky;top:0;z-index:5;background:var(--ink);color:var(--paper);padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.brand{font-family:'EB Garamond',Georgia,serif;font-size:24px;font-weight:600;line-height:1}
+.brand small{display:block;font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:1.5px;color:#C9D6D2;font-weight:500;margin-top:4px}
+.langsel{display:flex;gap:4px}
+.langsel button{border:1px solid #4A5A5B;background:transparent;color:#C9D6D2;border-radius:8px;padding:5px 7px;font-size:12px;font-weight:600;cursor:pointer}
+.langsel button.on{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+main{flex:1;padding:16px 16px 96px}
+nav.tabs{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:440px;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);z-index:6}
+nav.tabs button{border:0;background:none;padding:10px 4px 12px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+nav.tabs button .ic{font-size:20px;line-height:1}
+nav.tabs button.on{color:var(--terra)}
+nav.tabs .badge{background:var(--red);color:#fff;border-radius:10px;padding:0 6px;font-size:10px;margin-left:2px}
+h2{font-family:'EB Garamond',Georgia,serif;font-size:28px;font-weight:600;margin:4px 0 6px;line-height:1.1}
+.sub{color:var(--muted);font-size:14px;margin:0 0 14px;line-height:1.4}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.stat{background:var(--card);border-radius:14px;padding:10px 8px;text-align:center}
+.stat b{display:block;font-family:'EB Garamond',Georgia,serif;font-size:26px;line-height:1}
+.stat span{font-size:11px;color:var(--muted);line-height:1.2;display:block;margin-top:4px}
+.filters{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px}
+select,input[type=text],textarea{width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:9px 10px;font-size:14px}
+textarea{min-height:84px;resize:vertical}
+.mapwrap{background:#E3EBE6;border-radius:18px;overflow:hidden;position:relative;border:1px solid var(--line)}
+.mapwrap svg{display:block;width:100%;height:auto;touch-action:none;cursor:grab}
+.zoom{position:absolute;top:8px;right:8px;display:flex;flex-direction:column;gap:6px;z-index:2}
+.zoom button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--card);font-size:20px;font-weight:600;cursor:pointer;line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.pt{cursor:pointer}
+.pt:hover circle.dot{stroke-width:5}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;color:var(--muted);margin:10px 2px 16px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.list{display:flex;flex-direction:column;gap:10px}
+.item{background:var(--card);border-radius:16px;padding:12px;display:flex;gap:12px;align-items:center;cursor:pointer;border:1px solid transparent;text-align:left;width:100%}
+.item:hover{border-color:var(--line)}
+.thumb{width:64px;height:64px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:30px;overflow:hidden;background:linear-gradient(135deg,#E9E0CF,#D6C7AC)}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.item h3{margin:0 0 4px;font-size:16px;font-weight:600;line-height:1.2}
+.meta{font-size:12px;color:var(--muted)}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:20px;color:#fff}
+.pill.yellow{color:#2A2100}
+.vbadge{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--teal)}
+.btn{border:0;border-radius:12px;padding:12px 16px;font-weight:600;font-size:15px;cursor:pointer;background:var(--terra);color:#F7F1E6;width:100%}
+.btn.teal{background:var(--teal)}
+.btn.ghost{background:transparent;border:1.5px solid var(--ink);color:var(--ink)}
+.btn.small{width:auto;padding:8px 12px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+.empty{background:var(--card);border-radius:16px;padding:24px;text-align:center;color:var(--muted);font-size:14px}
+.note{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.4}
+label.f{display:block;font-size:13px;font-weight:600;margin:12px 0 5px}
+.urg{background:var(--card);border-radius:18px;overflow:hidden;margin-bottom:14px;border-left:6px solid var(--red)}
+.urg .ph{height:130px;display:flex;align-items:center;justify-content:center;font-size:56px;background:linear-gradient(135deg,#E9D3C8,#C9A08B)}
+.urg .ph img{width:100%;height:100%;object-fit:cover}
+.urg .bd{padding:14px}
+.urg h3{margin:0 0 4px;font-size:18px}
+.urg p{margin:8px 0 12px;font-size:14px;line-height:1.4}
+/* sheet */
+.overlay{position:fixed;inset:0;background:rgba(20,28,29,.55);z-index:20;display:none;align-items:flex-end;justify-content:center}
+.overlay.on{display:flex}
+.sheet{background:var(--paper);width:100%;max-width:440px;max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding:0 0 24px;animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
+.sheet .hero{height:170px;display:flex;align-items:center;justify-content:center;font-size:72px;background:linear-gradient(135deg,#E9E0CF,#CDB894);position:relative}
+.sheet .hero img{width:100%;height:100%;object-fit:cover}
+.close{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;border:0;background:rgba(28,37,38,.75);color:#fff;font-size:18px;cursor:pointer}
+.sheet .in{padding:16px}
+.sheet h2{font-size:30px}
+.desc{font-size:15px;line-height:1.5;margin:10px 0}
+.problem{background:#F6DCD5;border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.4;margin:10px 0}
+.problem.y{background:#F5E8C4}
+.kv{font-size:13px;color:var(--muted);margin:6px 0}
+.ltabs{display:flex;gap:6px;margin:12px 0 0}
+.ltabs button{flex:1;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:7px 4px;font-size:13px;font-weight:600;cursor:pointer}
+.ltabs button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.box{background:var(--card);border-radius:16px;padding:14px;margin-top:14px}
+.box h4{margin:0 0 8px;font-size:15px}
+.prog{height:8px;background:var(--sand);border-radius:6px;overflow:hidden;margin:8px 0}
+.prog i{display:block;height:100%;background:var(--teal)}
+.chatlog{display:flex;flex-direction:column;gap:8px;max-height:280px;overflow:auto;margin-bottom:10px}
+.bu,.bm{padding:9px 12px;border-radius:14px;font-size:14px;line-height:1.4;max-width:85%;white-space:pre-wrap}
+.bu{align-self:flex-end;background:var(--teal);color:#F4EEE3}
+.bm{align-self:flex-start;background:var(--sand)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.chip{border:1px solid var(--line);background:var(--paper);border-radius:20px;padding:5px 10px;font-size:12px;cursor:pointer}
+.appeal{white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;font-family:Georgia,serif;font-size:13px;line-height:1.5;max-height:340px;overflow:auto}
+.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:12px;font-size:14px;z-index:40;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90%}
+.toast.on{opacity:1}
+.mod{background:var(--card);border-radius:16px;padding:12px;margin-bottom:10px}
+.mod .top{display:flex;gap:12px}
+.mod p{font-size:14px;margin:8px 0;line-height:1.4}
+.photos{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.photos img{width:64px;height:64px;object-fit:cover;border-radius:10px}
+.search{margin-bottom:8px;font-size:15px;padding:11px 12px}
+.srclink{display:inline-block;margin:4px 0 8px;font-size:14px;font-weight:600;color:var(--teal);text-decoration:none}
+.srclink:hover{text-decoration:underline}
+.demo{background:#F5E8C4;border-radius:12px;padding:8px 12px;font-size:12px;line-height:1.4;margin-bottom:12px;color:#4A3B00}
+
+.grid{display:block}
+.grid>.urg,.grid>.mod{margin-bottom:14px}
+@media (min-width:900px){
+  html,body{background:var(--paper)}
+  .app{max-width:none;box-shadow:none}
+  header{padding:14px 28px}
+  .brand{font-size:28px}
+  nav.tabs{top:70px;bottom:0;left:0;transform:none;width:220px;max-width:none;display:flex;flex-direction:column;gap:4px;padding:16px 12px;border-top:0;border-right:1px solid var(--line)}
+  nav.tabs button{flex-direction:row;justify-content:flex-start;gap:12px;padding:12px 14px;font-size:15px;border-radius:12px}
+  nav.tabs button.on{background:var(--paper)}
+  main{margin-left:220px;padding:24px 32px 32px}
+  h2{font-size:36px}
+  .sub{font-size:16px;max-width:760px}
+  .mapview{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:24px;align-items:start}
+  .mv-right{position:sticky;top:86px;max-height:calc(100vh - 110px);overflow:auto;padding-right:4px}
+  .mapview .mapwrap svg{height:calc(100vh - 290px);min-height:420px}
+  .filters{max-width:760px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px;align-items:start}
+  .grid>.urg,.grid>.mod{margin:0}
+  .addview{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(320px,1fr);gap:28px;align-items:start}
+  .av-map{position:sticky;top:86px}
+  .addview .mapwrap svg{height:calc(100vh - 320px);min-height:380px}
+  .addview form label.f:first-child{margin-top:0}
+  .overlay{align-items:stretch;justify-content:flex-end}
+  .sheet{max-width:520px;max-height:none;height:100vh;border-radius:0;animation:side .22s ease-out}
+  .toast{bottom:28px;left:calc(50% + 110px)}
+}
+@keyframes side{from{transform:translateX(40px);opacity:.6}to{transform:none;opacity:1}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="brand" id="brand">Forgotten Places<small>KYRGYZSTAN HERITAGE MAP</small></div>
+  <div class="langsel" id="langsel"></div>
+</header>
+<main id="main"></main>
+<nav class="tabs" id="tabs"></nav>
+</div>
+<div class="overlay" id="ov"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- i18n ---------- */
+const LANGS=[["ky","KG","Кыргызча"],["ru","RU","Русский"],["en","EN","English"],["zh","中文","中文"]];
+const I={
+brand:{en:"Forgotten Places",ru:"Забытые места",ky:"Унутулган жерлер",zh:"被遗忘的地方"},
+brandSub:{en:"KYRGYZSTAN HERITAGE MAP",ru:"КАРТА НАСЛЕДИЯ КЫРГЫЗСТАНА",ky:"КЫРГЫЗСТАНДЫН МУРАС КАРТАСЫ",zh:"吉尔吉斯斯坦遗产地图"},
+tabMap:{en:"Map",ru:"Карта",ky:"Карта",zh:"地图"},
+tabUrgent:{en:"Urgent",ru:"Срочно",ky:"Шашылыш",zh:"紧急"},
+tabAdd:{en:"I’m here",ru:"Я здесь",ky:"Мен бул жердемин",zh:"我在这里"},
+tabMod:{en:"Moderate",ru:"Модерация",ky:"Модерация",zh:"审核"},
+stSites:{en:"sites on the map",ru:"объектов на карте",ky:"картадагы объекттер",zh:"地图上的遗址"},
+stRisk:{en:"at risk now",ru:"под угрозой",ky:"коркунучта",zh:"濒危"},
+stAppeals:{en:"appeals sent",ru:"обращений отправлено",ky:"жөнөтүлгөн кайрылуулар",zh:"已发送申诉"},
+stSaved:{en:"saved",ru:"спасено",ky:"сакталды",zh:"已拯救"},
+search:{en:"🔍 Search a site — Burana, Tash Rabat…",ru:"🔍 Поиск объекта — Бурана, Таш-Рабат…",ky:"🔍 Объект издөө — Бурана, Өзгөн…",zh:"🔍 搜索遗址——布拉纳塔、塔什拉巴特……"},
+allTypes:{en:"All types",ru:"Все типы",ky:"Бардык түрлөр",zh:"所有类型"},
+allRegions:{en:"All regions",ru:"Все области",ky:"Бардык облустар",zh:"所有州"},
+anyCond:{en:"Any condition",ru:"Любое состояние",ky:"Каалаган абал",zh:"任何状况"},
+legendVer:{en:"◌ dashed ring = verified",ru:"◌ пунктир = проверено",ky:"◌ пунктир = текшерилген",zh:"◌ 虚线圈 = 已核实"},
+legendZoom:{en:"Scroll or pinch to zoom, drag to move",ru:"Колесо или два пальца — масштаб, перетаскивание — сдвиг",ky:"Дөңгөлөк же эки манжа — масштаб, сүйрөө — жылдыруу",zh:"滚轮或双指缩放，拖动移动"},
+noMatch:{en:"No sites match these filters.",ru:"Нет объектов по этим фильтрам.",ky:"Бул чыпкалар боюнча объект жок.",zh:"没有符合条件的遗址。"},
+demoNote:{en:"Prototype with demo data: site conditions and reports are illustrative, not real assessments.",ru:"Прототип с демо-данными: состояния объектов и сообщения условные, это не реальная оценка.",ky:"Демо-маалыматтары бар прототип: объекттердин абалы жана билдирүүлөр шарттуу, чыныгы баа эмес.",zh:"原型使用演示数据：遗址状况和报告仅为示例，并非真实评估。"},
+verified:{en:"✔ Verified",ru:"✔ Проверено",ky:"✔ Текшерилген",zh:"✔ 已核实"},
+confOf:{en:"{n}/5 confirmations",ru:"{n}/5 подтверждений",ky:"{n}/5 тастыктоо",zh:"{n}/5 个确认"},
+urgTitle:{en:"Urgent protection",ru:"Срочно нужна защита",ky:"Шашылыш коргоо керек",zh:"紧急保护"},
+urgSub:{en:"Every site marked red lands here automatically. One tap creates an official appeal.",ru:"Каждый объект, отмеченный красным, автоматически попадает сюда. Одно нажатие — и готово официальное обращение.",ky:"Кызыл белгиленген ар бир объект бул жерге автоматтык түрдө түшөт. Бир басуу — расмий кайрылуу даяр.",zh:"所有标为红色的遗址会自动出现在这里。一键即可生成正式申诉。"},
+urgDefault:{en:"Condition reported as at risk.",ru:"Состояние отмечено как угрожающее.",ky:"Абалы коркунучтуу деп белгиленген.",zh:"状况被报告为濒危。"},
+createAppeal:{en:"Create official appeal",ru:"Создать официальное обращение",ky:"Расмий кайрылуу түзүү",zh:"生成正式申诉"},
+openCard:{en:"Open card",ru:"Открыть карточку",ky:"Баракчаны ачуу",zh:"打开卡片"},
+noRed:{en:"No sites are marked red right now. 🎉",ru:"Сейчас нет объектов под угрозой. 🎉",ky:"Азыр коркунучта объект жок. 🎉",zh:"目前没有濒危遗址。🎉"},
+addSub:{en:"Found a monument? Add it to the map. A moderator checks every new point before it goes live.",ru:"Нашли памятник? Добавьте его на карту. Модератор проверяет каждую новую точку перед публикацией.",ky:"Эстелик таптыңызбы? Аны картага кошуңуз. Модератор ар бир жаңы чекитти жарыяланганга чейин текшерет.",zh:"发现古迹了吗？把它添加到地图上。每个新地点在发布前都会经过审核员检查。"},
+add1:{en:"1. Zoom in and tap the map to mark the place",ru:"1. Приблизьте карту и нажмите, чтобы отметить место",ky:"1. Картаны чоңойтуп, жерди белгилөө үчүн басыңыз",zh:"1. 放大地图并点击以标记位置"},
+marked:{en:"Marked:",ru:"Отмечено:",ky:"Белгиленди:",zh:"已标记："},
+noPoint:{en:"No point marked yet.",ru:"Точка ещё не отмечена.",ky:"Чекит али белгилене элек.",zh:"尚未标记位置。"},
+add2:{en:"2. Name of the place",ru:"2. Название места",ky:"2. Жердин аталышы",zh:"2. 地点名称"},
+namePh:{en:"e.g. Old mazar near …",ru:"например, старый мазар у …",ky:"мисалы, … жанындагы эски мазар",zh:"例如：……附近的古老麻扎"},
+type:{en:"Type",ru:"Тип",ky:"Түрү",zh:"类型"},
+region:{en:"Region",ru:"Область",ky:"Облус",zh:"州"},
+add3:{en:"3. Condition",ru:"3. Состояние",ky:"3. Абалы",zh:"3. 状况"},
+add4:{en:"4. Description — what do you see?",ru:"4. Описание — что вы видите?",ky:"4. Сүрөттөмө — эмнени көрүп жатасыз?",zh:"4. 描述——你看到了什么？"},
+descPh:{en:"What is it, and what is happening to it?",ru:"Что это и что с ним происходит?",ky:"Бул эмне жана ага эмне болуп жатат?",zh:"这是什么？它现在怎么样了？"},
+add5:{en:"5. Photos",ru:"5. Фото",ky:"5. Сүрөттөр",zh:"5. 照片"},
+yourName:{en:"Your name",ru:"Ваше имя",ky:"Атыңыз",zh:"你的名字"},
+optional:{en:"Optional",ru:"Необязательно",ky:"Милдеттүү эмес",zh:"选填"},
+send:{en:"Send for moderation",ru:"Отправить на модерацию",ky:"Модерацияга жөнөтүү",zh:"提交审核"},
+needPoint:{en:"Tap the map to mark the place first",ru:"Сначала отметьте место на карте",ky:"Адегенде картадан жерди белгилеңиз",zh:"请先在地图上标记位置"},
+sent:{en:"Thank you! Sent to a moderator.",ru:"Спасибо! Отправлено модератору.",ky:"Рахмат! Модераторго жөнөтүлдү.",zh:"谢谢！已提交给审核员。"},
+modSub:{en:"New points wait here until a moderator approves them. Approved points appear on the map and start collecting confirmations.",ru:"Новые точки ждут здесь одобрения модератора. Одобренные появляются на карте и начинают собирать подтверждения.",ky:"Жаңы чекиттер бул жерде модератордун макулдугун күтөт. Макулдашылгандары картага чыгып, тастыктоо чогулта баштайт.",zh:"新地点在此等待审核员批准。批准后会出现在地图上并开始收集确认。"},
+reportedBy:{en:"Reported by",ru:"Сообщил(а):",ky:"Билдирген:",zh:"报告人："},
+approve:{en:"✔ Approve",ru:"✔ Одобрить",ky:"✔ Макулдашуу",zh:"✔ 批准"},
+reject:{en:"Reject",ru:"Отклонить",ky:"Четке кагуу",zh:"拒绝"},
+queueEmpty:{en:"The moderation queue is empty.",ru:"Очередь модерации пуста.",ky:"Модерация кезеги бош.",zh:"审核队列为空。"},
+demoCtl:{en:"Demo controls",ru:"Управление демо",ky:"Демо башкаруу",zh:"演示控制"},
+demoKept:{en:"Everything you do is kept in this browser only.",ru:"Все действия сохраняются только в этом браузере.",ky:"Бардык аракеттер ушул браузерде гана сакталат.",zh:"所有操作只保存在此浏览器中。"},
+reset:{en:"Reset demo data",ru:"Сбросить демо-данные",ky:"Демо-маалыматты кайра баштоо",zh:"重置演示数据"},
+approved:{en:"Approved — now on the map",ru:"Одобрено — теперь на карте",ky:"Макулдашылды — эми картада",zh:"已批准——现已显示在地图上"},
+rejected:{en:"Rejected",ru:"Отклонено",ky:"Четке кагылды",zh:"已拒绝"},
+resetDone:{en:"Demo data reset",ru:"Демо-данные сброшены",ky:"Демо-маалымат кайра башталды",zh:"演示数据已重置"},
+anon:{en:"Anonymous",ru:"Аноним",ky:"Аноним",zh:"匿名"},
+restored:{en:"💙 Restored — this site is marked “Saved”.",ru:"💙 Восстановлен — объект отмечен как «Спасено».",ky:"💙 Калыбына келтирилди — объект «Сакталды» деп белгиленди.",zh:"💙 已修复——该遗址标记为“已拯救”。"},
+community:{en:"Community check",ru:"Проверка сообществом",ky:"Коомчулуктун текшерүүсү",zh:"社区核实"},
+isVerified:{en:"✔ This point is verified — you can trust it.",ru:"✔ Точка проверена — ей можно доверять.",ky:"✔ Чекит текшерилген — ага ишенсе болот.",zh:"✔ 此地点已核实，可以信赖。"},
+confNeed:{en:"{n} of 5 confirmations to become verified",ru:"{n} из 5 подтверждений до статуса «проверено»",ky:"Текшерилген болуу үчүн 5тен {n} тастыктоо",zh:"已有 {n}/5 个确认，满5个即核实"},
+confBtn:{en:"I was here too — it’s accurate",ru:"Я тоже был здесь, всё так",ky:"Мен да бул жерде болгом, баары туура",zh:"我也来过这里，情况属实"},
+confDone:{en:"✔ You confirmed this",ru:"✔ Вы подтвердили",ky:"✔ Сиз тастыктадыңыз",zh:"✔ 你已确认"},
+verifiedBy:{en:"✔ Verified by {n} visitors",ru:"✔ Проверено: {n} посетителей",ky:"✔ {n} зыяратчы тастыктады",zh:"✔ 已有 {n} 位访客核实"},
+talk:{en:"💬 Talk to the monument",ru:"💬 Поговорите с памятником",ky:"💬 Эстелик менен сүйлөшүңүз",zh:"💬 与古迹对话"},
+askPh:{en:"Ask in any language…",ru:"Спросите на любом языке…",ky:"Каалаган тилде сураңыз…",zh:"用任何语言提问……"},
+ask:{en:"Ask",ru:"Спросить",ky:"Суроо",zh:"提问"},
+onlyFacts:{en:"Answers only from the verified facts on this card.",ru:"Отвечает только по проверенным фактам из карточки.",ky:"Баракчадагы текшерилген фактылар боюнча гана жооп берет.",zh:"仅根据本卡片上已核实的事实回答。"},
+modUpd:{en:"🛡️ Moderator: update condition",ru:"🛡️ Модератор: изменить состояние",ky:"🛡️ Модератор: абалын өзгөртүү",zh:"🛡️ 审核员：更新状况"},
+save:{en:"Save",ru:"Сохранить",ky:"Сактоо",zh:"保存"},
+google:{en:"🔍 See photos of this site on Google",ru:"🔍 Фото объекта в Google",ky:"🔍 Объекттин сүрөттөрү Google’да",zh:"🔍 在 Google 上查看该遗址照片"},
+thanksConf:{en:"Thanks for confirming",ru:"Спасибо за подтверждение",ky:"Тастыктаганыңыз үчүн рахмат",zh:"感谢你的确认"},
+nowVer:{en:"🎉 Five confirmations — now verified!",ru:"🎉 Пять подтверждений — теперь проверено!",ky:"🎉 Беш тастыктоо — эми текшерилген!",zh:"🎉 已有五个确认——现已核实！"},
+markedSaved:{en:"💙 Marked as Saved",ru:"💙 Отмечено как «Спасено»",ky:"💙 «Сакталды» деп белгиленди",zh:"💙 已标记为已拯救"},
+movedUrgent:{en:"Moved to Urgent protection",ru:"Перемещено в «Срочно нужна защита»",ky:"«Шашылыш коргоо» бөлүмүнө өттү",zh:"已移至紧急保护"},
+condUpd:{en:"Condition updated",ru:"Состояние обновлено",ky:"Абалы жаңыланды",zh:"状况已更新"},
+offAppeal:{en:"OFFICIAL APPEAL",ru:"ОФИЦИАЛЬНОЕ ОБРАЩЕНИЕ",ky:"РАСМИЙ КАЙРЫЛУУ",zh:"正式申诉"},
+to:{en:"To",ru:"Кому",ky:"Кимге",zh:"收件方"},
+ministry:{en:"Ministry of Culture",ru:"Министерство культуры",ky:"Маданият министрлиги",zh:"文化部"},
+localAdm:{en:"Local administration",ru:"Местная администрация",ky:"Жергиликтүү администрация",zh:"地方政府"},
+letterLang:{en:"Letter language",ru:"Язык письма",ky:"Каттын тили",zh:"信件语言"},
+fullName:{en:"Full name",ru:"ФИО",ky:"Толук аты-жөнү",zh:"全名"},
+ready:{en:"Ready letter",ru:"Готовое письмо",ky:"Даяр кат",zh:"生成的信件"},
+copy:{en:"Copy text",ru:"Копировать",ky:"Көчүрүү",zh:"复制文本"},
+download:{en:"Download (.doc)",ru:"Скачать (.doc)",ky:"Жүктөп алуу (.doc)",zh:"下载 (.doc)"},
+email:{en:"Open in email app",ru:"Открыть в почте",ky:"Почтадан ачуу",zh:"在邮件应用中打开"},
+emailNote:{en:"Add the agency’s email address yourself and attach the photos from the site card. Nothing is sent automatically.",ru:"Адрес ведомства укажите сами и приложите фото из карточки. Ничего не отправляется автоматически.",ky:"Мекеменин дарегин өзүңүз жазып, баракчадагы сүрөттөрдү тиркеңиз. Эч нерсе автоматтык түрдө жөнөтүлбөйт.",zh:"请自行填写机构的邮箱地址，并附上卡片中的照片。不会自动发送任何内容。"},
+copied:{en:"Copied",ru:"Скопировано",ky:"Көчүрүлдү",zh:"已复制"},
+copyFail:{en:"Select the text and copy it",ru:"Выделите текст и скопируйте",ky:"Текстти белгилеп, көчүрүңүз",zh:"请选中文本并复制"},
+savedFile:{en:"Saved",ru:"Сохранено",ky:"Сакталды",zh:"已保存"},
+dlFail:{en:"Download was not completed",ru:"Скачивание не завершено",ky:"Жүктөө аяктаган жок",zh:"下载未完成"},
+appealCreated:{en:"Appeal created",ru:"Обращение создано",ky:"Кайрылуу түзүлдү",zh:"申诉已生成"},
+q1:{en:"How old are you?",ru:"Сколько тебе лет?",ky:"Канча жаштасың?",zh:"你多大了？"},
+q2:{en:"Who built you?",ru:"Кто тебя построил?",ky:"Сени ким курган?",zh:"谁建造了你？"},
+q3:{en:"What is happening to you?",ru:"Что с тобой происходит?",ky:"Сага эмне болуп жатат?",zh:"你现在怎么样了？"},
+greet:{en:"Hello! I am {name}. Ask me anything.",ru:"Здравствуй! Я — {name}. Спроси меня о чём-нибудь.",ky:"Салам! Мен — {name}. Мага суроо бер.",zh:"你好！我是{name}。问我点什么吧。"},
+bishkek:{en:"Bishkek",ru:"Бишкек",ky:"Бишкек",zh:"比什凯克"},
+osh:{en:"Osh",ru:"Ош",ky:"Ош",zh:"奥什"},
+issykkul:{en:"Issyk-Kul",ru:"Иссык-Куль",ky:"Ысык-Көл",zh:"伊塞克湖"},
+mapAria:{en:"Map of Kyrgyzstan with heritage sites",ru:"Карта Кыргызстана с памятниками",ky:"Эстеликтер белгиленген Кыргызстандын картасы",zh:"标有遗址的吉尔吉斯斯坦地图"},
+zIn:{en:"Zoom in",ru:"Приблизить",ky:"Чоңойтуу",zh:"放大"},
+zOut:{en:"Zoom out",ru:"Отдалить",ky:"Кичирейтүү",zh:"缩小"},
+zReset:{en:"Show whole country",ru:"Показать всю страну",ky:"Бүт өлкөнү көрсөтүү",zh:"显示全国"}
+};
+let lang="en";
+const t=(k,v)=>{let s=(I[k]&&(I[k][lang]||I[k].en))||k;if(v)for(const x in v)s=s.split("{"+x+"}").join(v[x]);return s};
+const L=(o,lg)=>o?(typeof o==="string"?o:(o[lg||lang]||o.en||o.ru||"")):"";
+
+const TYPES={
+  mazar:{lab:{en:"Mazar / mausoleum",ru:"Мазар / мавзолей",ky:"Мазар / күмбөз",zh:"麻扎 / 陵墓"},ru:"мазар / мавзолей",ky:"мазар / күмбөз",icon:"🕌"},
+  petro:{lab:{en:"Petroglyphs",ru:"Петроглифы",ky:"Петроглифтер",zh:"岩画"},ru:"петроглифы",ky:"петроглифтер",icon:"🪨"},
+  carav:{lab:{en:"Caravanserai",ru:"Караван-сарай",ky:"Кербен сарай",zh:"商队客栈"},ru:"караван-сарай",ky:"кербен сарай",icon:"🐫"},
+  build:{lab:{en:"Historic building",ru:"Историческое здание",ky:"Тарыхый имарат",zh:"历史建筑"},ru:"историческое здание",ky:"тарыхый имарат",icon:"🏛️"},
+  settle:{lab:{en:"Ancient settlement",ru:"Древнее городище",ky:"Байыркы шаар чалдыбары",zh:"古城遗址"},ru:"древнее городище",ky:"байыркы шаар чалдыбары",icon:"🏰"}
+};
+const tl=k=>L(TYPES[k].lab);
+const STATUS={
+  green:{lab:{en:"Good condition",ru:"Хорошее состояние",ky:"Жакшы абалда",zh:"状况良好"},color:"#3E8E5A"},
+  yellow:{lab:{en:"Deteriorating",ru:"Разрушается",ky:"Бузулууда",zh:"正在损坏"},color:"#D9A520"},
+  red:{lab:{en:"At risk",ru:"Под угрозой",ky:"Коркунучта",zh:"濒危"},color:"#C0392B"},
+  blue:{lab:{en:"Saved",ru:"Спасено",ky:"Сакталды",zh:"已拯救"},color:"#2F6FB0"}
+};
+const sl=k=>L(STATUS[k].lab);
+/* region: [ru adjective, ky, ru short, zh] */
+const REGIONS={Batken:["Баткенская","Баткен","Баткен","巴特肯"],Chuy:["Чуйская","Чүй","Чуй","楚河"],"Issyk-Kul":["Иссык-Кульская","Ысык-Көл","Иссык-Куль","伊塞克湖"],"Jalal-Abad":["Джалал-Абадская","Жалал-Абад","Джалал-Абад","贾拉拉巴德"],Naryn:["Нарынская","Нарын","Нарын","纳伦"],Osh:["Ошская","Ош","Ош","奥什"],Talas:["Таласская","Талас","Талас","塔拉斯"]};
+const rn=r=>({ru:REGIONS[r][2],ky:REGIONS[r][1],zh:REGIONS[r][3]+"州"}[lang]||r);
+const rfull=r=>({ru:REGIONS[r][0]+" область",ky:REGIONS[r][1]+" облусу",zh:REGIONS[r][3]+"州"}[lang]||r+" region");
+
+const SEED={appeals:0,mine:{},sites:[
+ {id:"burana",type:"build",region:"Chuy",status:"yellow",lat:42.746,lon:75.250,conf:7,
+  age:{en:"about 1,000 years old (11th century)",ru:"около 1000 лет (XI век)",ky:"болжол менен 1000 жыл (XI кылым)",zh:"约1000年（11世纪）"},
+  name:{en:"Burana Tower",ru:"Башня Бурана",ky:"Бурана мунарасы",zh:"布拉纳塔"},
+  desc:{en:"An 11th-century minaret of the Karakhanid era, the main surviving landmark of the medieval city of Balasagun on the Silk Road.",ru:"Минарет XI века эпохи Караханидов — главный сохранившийся памятник средневекового города Баласагун на Шёлковом пути.",ky:"Караханиддер доорундагы XI кылымдын мунарасы — Жибек жолундагы орто кылымдык Баласагун шаарынын сакталып калган башкы эстелиги.",zh:"喀喇汗王朝时期的11世纪宣礼塔，是丝绸之路上中世纪城市巴拉沙衮现存的主要古迹。"},
+  problem:{en:"Cracks in the brickwork at the base.",ru:"Трещины в кирпичной кладке у основания.",ky:"Негизиндеги кыш тизмесинде жаракалар бар.",zh:"塔基砖砌部分出现裂缝。"}},
+ {id:"tashrabat",type:"carav",region:"Naryn",status:"green",lat:40.823,lon:75.289,conf:12,
+  age:{en:"traditionally dated to the 15th century",ru:"традиционно датируется XV веком",ky:"салттуу түрдө XV кылымга таандык",zh:"传统上认为建于15世纪"},
+  name:{en:"Tash Rabat",ru:"Таш-Рабат",ky:"Таш-Рабат",zh:"塔什拉巴特"},
+  desc:{en:"A stone caravanserai high in the mountains of Naryn, on the Silk Road route towards Kashgar. Traditionally dated to the 15th century.",ru:"Каменный караван-сарай высоко в горах Нарына, на пути Шёлкового пути в сторону Кашгара. Традиционно датируется XV веком.",ky:"Нарындын бийик тоолорундагы таш кербен сарай, Жибек жолунун Кашкарга карай багытында. Салттуу түрдө XV кылымга таандык деп эсептелет.",zh:"位于纳伦高山中的石砌商队客栈，地处通往喀什的丝绸之路上，传统上认为建于15世纪。"},problem:null},
+ {id:"saimaluu",type:"petro",region:"Jalal-Abad",status:"red",lat:41.17,lon:73.80,conf:3,
+  age:{en:"many carvings date from the Bronze Age, thousands of years ago",ru:"многие рисунки — эпохи бронзы, им тысячи лет",ky:"көп сүрөттөр коло доорунан, алар миңдеген жылдык",zh:"许多岩画来自青铜时代，已有数千年历史"},
+  name:{en:"Saimaluu-Tash petroglyphs",ru:"Петроглифы Саймалуу-Таш",ky:"Саймалуу-Таш петроглифтери",zh:"赛马卢塔什岩画"},
+  desc:{en:"One of the largest petroglyph sites in Central Asia: thousands of images carved on stones at a high mountain pass, many from the Bronze Age.",ru:"Одно из крупнейших скоплений петроглифов в Центральной Азии: тысячи изображений на камнях высоко в горах, многие — эпохи бронзы.",ky:"Борбордук Азиядагы эң ири петроглиф топторунун бири: бийик тоодогу таштарга чегилген миңдеген сүрөттөр, алардын көбү коло доорунан.",zh:"中亚最大的岩画遗址之一：高山山口的石头上刻有数千幅图像，其中许多来自青铜时代。"},
+  problem:{en:"Some stones are covered with modern graffiti and scratches.",ru:"Часть камней покрыта современными надписями и царапинами.",ky:"Айрым таштарга азыркы жазуулар жана чийиктер түшүрүлгөн.",zh:"部分石头上出现了现代涂鸦和划痕。"}},
+ {id:"cholponata",type:"petro",region:"Issyk-Kul",status:"yellow",lat:42.665,lon:77.06,conf:9,
+  age:{en:"the carvings span thousands of years, from the Bronze Age onwards",ru:"рисункам тысячи лет, начиная с эпохи бронзы",ky:"сүрөттөр миңдеген жылдык, коло доорунан бери",zh:"岩画跨越数千年，始于青铜时代"},
+  name:{en:"Cholpon-Ata petroglyphs",ru:"Петроглифы Чолпон-Аты",ky:"Чолпон-Ата петроглифтери",zh:"乔尔蓬阿塔岩画"},
+  desc:{en:"An open-air field of petroglyphs on the northern shore of Issyk-Kul, with images of ibexes, hunters and other animals.",ru:"Поле петроглифов под открытым небом на северном берегу Иссык-Куля с изображениями горных козлов, охотников и животных.",ky:"Ысык-Көлдүн түндүк жээгиндеги ачык асман астындагы петроглифтер талаасы: тоо текелер, мергенчилер жана жаныбарлардын сүрөттөрү.",zh:"伊塞克湖北岸的露天岩画区，刻有北山羊、猎人和其他动物的图像。"},
+  problem:{en:"Paths run over the stones; some images are wearing away.",ru:"Тропы проходят прямо по камням, часть изображений стирается.",ky:"Жолчолор таштардын үстүнөн өтөт, айрым сүрөттөр өчүп баратат.",zh:"小路直接从石头上经过，部分图像正在磨损。"}},
+ {id:"uzgen",type:"build",region:"Osh",status:"green",lat:40.77,lon:73.30,conf:8,
+  age:{en:"built in the Karakhanid era, about 900 years ago",ru:"построены в эпоху Караханидов, около 900 лет назад",ky:"Караханиддер доорунда, болжол менен 900 жыл мурун курулган",zh:"建于喀喇汗王朝时期，约900年前"},
+  name:{en:"Uzgen minaret and mausoleums",ru:"Узгенский минарет и мавзолеи",ky:"Өзгөн мунарасы жана күмбөздөрү",zh:"乌兹根宣礼塔与陵墓"},
+  desc:{en:"A minaret and three mausoleums of the Karakhanid era, famous for their carved brick and terracotta decoration.",ru:"Минарет и три мавзолея эпохи Караханидов, знаменитые резным кирпичным и терракотовым декором.",ky:"Караханиддер доорунун мунарасы жана үч күмбөзү, оюулуу кыш жана терракота кооздуктары менен белгилүү.",zh:"喀喇汗王朝时期的宣礼塔和三座陵墓，以精美的雕砖和陶饰闻名。"},problem:null},
+ {id:"shahfazil",type:"mazar",region:"Jalal-Abad",status:"yellow",lat:41.47,lon:71.63,conf:5,
+  age:{en:"a medieval building",ru:"средневековое сооружение",ky:"орто кылымдык имарат",zh:"中世纪建筑"},
+  name:{en:"Shah-Fazil mausoleum",ru:"Мавзолей Шах-Фазиль",ky:"Шах-Фазил күмбөзү",zh:"沙法济尔陵墓"},
+  desc:{en:"A medieval mausoleum in the Ala-Buka district, known for the rich carved ornament inside its dome.",ru:"Средневековый мавзолей в Ала-Букинском районе, известный богатым резным орнаментом внутри купола.",ky:"Ала-Бука районундагы орто кылымдык күмбөз, куполунун ичиндеги бай оюу-кооздуктары менен белгилүү.",zh:"位于阿拉布卡区的中世纪陵墓，以穹顶内部丰富的雕刻纹饰闻名。"},
+  problem:{en:"Moisture is damaging the inner walls.",ru:"Влага разрушает внутренние стены.",ky:"Нымдуулук ички дубалдарды бузууда.",zh:"潮湿正在损坏内墙。"}},
+ {id:"manas",type:"mazar",region:"Talas",status:"green",lat:42.48,lon:72.47,conf:11,
+  age:{en:"a 14th-century mausoleum, almost 700 years old",ru:"мавзолей XIV века, почти 700 лет",ky:"XIV кылымдын күмбөзү, дээрлик 700 жыл",zh:"14世纪的陵墓，近700年历史"},
+  name:{en:"Manas Gumbez",ru:"Гумбез Манаса",ky:"Манас күмбөзү",zh:"玛纳斯陵墓"},
+  desc:{en:"A 14th-century mausoleum in the Talas valley, linked in local tradition with the epic hero Manas.",ru:"Мавзолей XIV века в Таласской долине, который народная традиция связывает с героем эпоса Манасом.",ky:"Талас өрөөнүндөгү XIV кылымдын күмбөзү, эл оозундагы салт аны «Манас» эпосунун баатыры менен байланыштырат.",zh:"位于塔拉斯河谷的14世纪陵墓，当地传统将其与史诗英雄玛纳斯联系在一起。"},problem:null},
+ {id:"akbeshim",type:"settle",region:"Chuy",status:"red",lat:42.80,lon:75.20,conf:6,
+  age:{en:"more than a thousand years old",ru:"более тысячи лет",ky:"миң жылдан ашык",zh:"一千多年"},
+  name:{en:"Ak-Beshim (Suyab)",ru:"Ак-Бешим (Суяб)",ky:"Ак-Бешим (Суяб)",zh:"阿克贝希姆（碎叶城）"},
+  desc:{en:"The ruins of Suyab, an important city on the Silk Road. Part of the UNESCO World Heritage “Silk Roads” site.",ru:"Руины Суяба — важного города на Шёлковом пути. Входят в объект Всемирного наследия ЮНЕСКО «Шёлковый путь».",ky:"Жибек жолундагы маанилүү шаар — Суябдын урандылары. ЮНЕСКОнун «Жибек жолу» дүйнөлүк мурас объектисине кирет.",zh:"碎叶城遗址，丝绸之路上的重要城市，属于联合国教科文组织世界遗产“丝绸之路”的一部分。"},
+  problem:{en:"The earthen walls are eroding after rains.",ru:"Глинобитные стены размываются дождями.",ky:"Топурак дубалдарды жамгыр жууп кетүүдө.",zh:"土墙在雨后不断受到侵蚀。"}},
+ {id:"koshoy",type:"settle",region:"Naryn",status:"red",lat:41.07,lon:75.70,conf:2,
+  age:{en:"a medieval fortress",ru:"средневековая крепость",ky:"орто кылымдык чеп",zh:"中世纪要塞"},
+  name:{en:"Koshoy-Korgon",ru:"Кошой-Коргон",ky:"Кошой-Коргон",zh:"阔绍伊科尔贡"},
+  desc:{en:"The earthen walls of a medieval fortress near At-Bashy, linked in legend with the epic hero Koshoy.",ru:"Глинобитные стены средневековой крепости у Ат-Баши, которую легенды связывают с героем эпоса Кошоем.",ky:"Ат-Башы жанындагы орто кылымдык чептин топурак дубалдары, уламыштар аны эпостун баатыры Кошой менен байланыштырат.",zh:"阿特巴什附近中世纪要塞的土墙，传说与史诗英雄阔绍伊有关。"},
+  problem:{en:"The walls are crumbling; parts have already collapsed.",ru:"Стены осыпаются, часть уже обрушилась.",ky:"Дубалдар урап жатат, бир бөлүгү кулап калган.",zh:"城墙正在崩塌，部分已经倒塌。"}},
+ {id:"nevaket",type:"settle",region:"Chuy",status:"blue",lat:42.88,lon:74.99,conf:10,
+  age:{en:"more than a thousand years old",ru:"более тысячи лет",ky:"миң жылдан ашык",zh:"一千多年"},
+  name:{en:"Krasnaya Rechka (Nevaket)",ru:"Красная Речка (Невакет)",ky:"Красная Речка (Невакет)",zh:"红河古城（新城）"},
+  desc:{en:"The ruins of Nevaket, a large medieval Silk Road town, also part of the UNESCO “Silk Roads” site.",ru:"Руины Невакета — крупного средневекового города на Шёлковом пути, тоже часть объекта ЮНЕСКО «Шёлковый путь».",ky:"Жибек жолундагы ири орто кылымдык шаар — Невакеттин урандылары, ЮНЕСКОнун «Жибек жолу» объектисинин бир бөлүгү.",zh:"新城遗址，丝绸之路上的大型中世纪城镇，也是联合国教科文组织“丝绸之路”遗产的一部分。"},problem:null}
+],pending:[
+ {id:"p1",type:"mazar",region:"Naryn",status:"yellow",lat:42.21,lon:75.76,author:"Aibek",photos:[],
+  name:{en:"Old mazar near Kochkor",ru:"Старый мазар у Кочкора",ky:"Кочкор жанындагы эски мазар",zh:"科奇科尔附近的古老麻扎"},
+  desc:{en:"A small clay mazar on a hill outside the village. Part of the dome has fallen in.",ru:"Небольшой глиняный мазар на холме за селом. Часть купола обрушилась.",ky:"Айылдын сыртындагы дөбөдө чакан ылай мазар. Куполунун бир бөлүгү кулап түшкөн.",zh:"村外山丘上的一座小型泥砌麻扎，穹顶已部分坍塌。"},
+  problem:{en:"Part of the dome has fallen in.",ru:"Часть купола обрушилась.",ky:"Куполунун бир бөлүгү кулап түшкөн.",zh:"穹顶已部分坍塌。"}}
+]};
+
+/* ---------- state ---------- */
+const KEY="fp-proto-v2";
+let S; try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
+if(!S||!S.sites)S=JSON.parse(JSON.stringify(SEED));
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+let tab="map", F={type:"all",region:"all",status:"all",q:""}, pick=null;
+const chats={};
+let sampleFn=null, downloads=null;
+if(window.claude&&claude.use){
+  claude.use("sample").then(s=>{sampleFn=s}).catch(()=>{});
+  claude.use("downloads").then(d=>{downloads=d}).catch(()=>{});
+}
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const esc=x=>String(x==null?"":x).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const site=id=>S.sites.find(s=>s.id===id);
+function toast(m){const e=$("#toast");e.textContent=m;e.classList.add("on");clearTimeout(e._h);e._h=setTimeout(()=>e.classList.remove("on"),2200)}
+function pill(st){return `<span class="pill ${st}" style="background:${STATUS[st].color}">${sl(st)}</span>`}
+function thumb(s,cls="thumb"){return `<div class="${cls}">${s.photos&&s.photos.length?`<img src="${s.photos[0]}" alt="">`:TYPES[s.type].icon}</div>`}
+const verified=s=>s.conf>=5;
+
+/* ---------- map ---------- */
+const X=lon=>(lon-69)*95+10, Y=lat=>(43.4-lat)*128;
+const BORDER=[[71.0,42.78],[71.9,42.62],[73.45,42.48],[73.55,43.03],[74.3,43.25],[75.7,42.85],[76.9,42.98],[78.0,42.88],[79.2,42.78],[80.25,42.2],[80.1,42.0],[79.3,41.8],[78.4,41.4],[77.6,41.0],[76.8,40.95],[76.3,40.4],[75.6,40.65],[74.9,40.5],[74.2,40.1],[73.8,39.75],[73.6,39.45],[72.8,39.35],[72.0,39.35],[71.2,39.55],[70.5,39.6],[69.6,39.6],[69.3,39.9],[69.6,40.2],[70.7,40.25],[71.7,40.2],[72.3,40.45],[72.75,40.62],[72.95,40.8],[72.85,40.98],[72.4,41.1],[71.9,41.3],[71.3,41.2],[70.8,41.45],[71.05,41.95],[70.95,42.3]];
+const VIEWS={};
+const getV=key=>VIEWS[key]||(VIEWS[key]={x:0,y:0,w:1100,h:560});
+const sc=(x,y,k,inner)=>`<g data-sx="${x.toFixed(1)}" data-sy="${y.toFixed(1)}" transform="translate(${x.toFixed(1)},${y.toFixed(1)}) scale(${k})">${inner}</g>`;
+function mapSVG(sites,opts={}){
+  const key=opts.key||"main", v=getV(key), k=v.w/1100;
+  const poly=BORDER.map(p=>X(p[0]).toFixed(0)+","+Y(p[1]).toFixed(0)).join(" ");
+  let pts=sites.map(s=>{
+    const c=STATUS[s.status].color;
+    return `<g class="pt" data-id="${s.id}">`+sc(X(s.lon),Y(s.lat),k,`
+      ${verified(s)?`<circle r="38" fill="none" stroke="#2C6E6A" stroke-width="5" stroke-dasharray="7 5"/>`:""}
+      <circle class="dot" r="29" fill="${c}" stroke="#FBF8F2" stroke-width="5"/>
+      <text y="10" text-anchor="middle" font-size="30">${TYPES[s.type].icon}</text>`)+`</g>`}).join("");
+  if(opts.pick) pts+=sc(X(opts.pick.lon),Y(opts.pick.lat),k,`<circle r="26" fill="#A9441F" stroke="#fff" stroke-width="6"/><circle r="8" fill="#fff"/>`);
+  const city=(name,lon,lat,dy)=>sc(X(lon),Y(lat),k,`<circle r="8" fill="#1C2526"/><text x="-14" y="${dy}" text-anchor="end" font-size="28" font-weight="600" fill="#1C2526" font-family="DM Sans, Arial, sans-serif">${esc(name)}</text>`);
+  return `<svg viewBox="${v.x} ${v.y} ${v.w} ${v.h}" data-key="${key}" ${opts.id?`id="${opts.id}"`:""} role="img" aria-label="${esc(t("mapAria"))}">
+    <rect x="-3000" y="-3000" width="7100" height="6560" fill="#E3EBE6"/>
+    <polygon points="${poly}" fill="#F7F2E8" stroke="#9E8F75" stroke-width="3" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
+    <ellipse cx="798" cy="128" rx="108" ry="30" transform="rotate(-6 798 128)" fill="#9CC3C9"/>
+    ${sc(805,166,k,`<text text-anchor="middle" font-size="24" fill="#2C5A60" font-family="DM Sans, Arial, sans-serif">${esc(t("issykkul"))}</text>`)}
+    ${city(t("bishkek"),74.59,42.87,-14)}${city(t("osh"),72.80,40.53,34)}
+    ${pts}</svg>`;
+}
+function zoomCtl(){return `<div class="zoom"><button type="button" data-z="in" aria-label="${esc(t("zIn"))}">+</button><button type="button" data-z="out" aria-label="${esc(t("zOut"))}">−</button><button type="button" data-z="reset" aria-label="${esc(t("zReset"))}">⟲</button></div>`}
+function applyV(svg){const v=getV(svg.dataset.key);svg.setAttribute("viewBox",`${v.x} ${v.y} ${v.w} ${v.h}`);const k=v.w/1100;
+  svg.querySelectorAll("[data-sx]").forEach(g=>g.setAttribute("transform",`translate(${g.dataset.sx},${g.dataset.sy}) scale(${k})`))}
+function clampV(v){v.w=Math.min(1100,Math.max(110,v.w));v.h=v.w*560/1100;
+  v.x=Math.min(1100-v.w*0.5,Math.max(-v.w*0.5,v.x));v.y=Math.min(560-v.h*0.5,Math.max(-v.h*0.5,v.y));if(v.w>=1100){v.x=0;v.y=0}}
+function zoomAt(svg,f,cx,cy){const v=getV(svg.dataset.key);const nw=Math.min(1100,Math.max(110,v.w/f));const r=nw/v.w;
+  v.x=cx-(cx-v.x)*r;v.y=cy-(cy-v.y)*r;v.w=nw;clampV(v);applyV(svg)}
+function svgPoint(svg,evt){const p=svg.createSVGPoint();p.x=evt.clientX;p.y=evt.clientY;return p.matrixTransform(svg.getScreenCTM().inverse())}
+function attachZoom(wrap){
+  const svg=wrap.querySelector("svg");const P=new Map();let pinch=null;svg._moved=0;
+  wrap.querySelector(".zoom").onclick=e=>{const b=e.target.closest("button");if(!b)return;e.stopPropagation();const v=getV(svg.dataset.key);
+    if(b.dataset.z==="reset"){v.x=0;v.y=0;v.w=1100;clampV(v);applyV(svg);return}
+    zoomAt(svg,b.dataset.z==="in"?1.6:1/1.6,v.x+v.w/2,v.y+v.h/2)};
+  svg.addEventListener("wheel",e=>{e.preventDefault();const p=svgPoint(svg,e);zoomAt(svg,e.deltaY<0?1.25:0.8,p.x,p.y)},{passive:false});
+  svg.addEventListener("pointerdown",e=>{P.set(e.pointerId,{x:e.clientX,y:e.clientY});svg._moved=0;if(P.size===2){const [a,b]=[...P.values()];pinch=Math.hypot(a.x-b.x,a.y-b.y)}});
+  svg.addEventListener("pointermove",e=>{if(!P.has(e.pointerId))return;const last=P.get(e.pointerId);const v=getV(svg.dataset.key);
+    if(P.size===1){const u=Math.max(v.w/svg.clientWidth,v.h/svg.clientHeight);const dx=e.clientX-last.x,dy=e.clientY-last.y;svg._moved+=Math.abs(dx)+Math.abs(dy);
+      if(svg._moved>6){v.x-=dx*u;v.y-=dy*u;clampV(v);applyV(svg)}}
+    P.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(P.size===2&&pinch){const [a,b]=[...P.values()];const d=Math.hypot(a.x-b.x,a.y-b.y);const mid=svgPoint(svg,{clientX:(a.x+b.x)/2,clientY:(a.y+b.y)/2});
+      zoomAt(svg,d/pinch,mid.x,mid.y);pinch=d;svg._moved=99}});
+  const up=e=>{P.delete(e.pointerId);if(P.size<2)pinch=null};
+  svg.addEventListener("pointerup",up);svg.addEventListener("pointercancel",up);svg.addEventListener("pointerleave",up);
+}
+
+/* ---------- chrome ---------- */
+function renderChrome(){
+  document.documentElement.lang={ky:"ky",ru:"ru",en:"en",zh:"zh"}[lang];
+  $("#brand").innerHTML=`${esc(t("brand"))}<small>${esc(t("brandSub"))}</small>`;
+  $("#langsel").innerHTML=LANGS.map(l=>`<button class="${l[0]===lang?"on":""}" data-l="${l[0]}" title="${l[2]}">${l[1]}</button>`).join("");
+  $("#langsel").onclick=e=>{const b=e.target.closest("button");if(!b)return;setLang(b.dataset.l)};
+  const red=S.sites.filter(s=>s.status==="red").length;
+  const T=[["map","🗺️",t("tabMap")],["urgent","🚨",t("tabUrgent"),red],["add","📍",t("tabAdd")],["moderate","🛡️",t("tabMod"),S.pending.length]];
+  $("#tabs").innerHTML=T.map(x=>`<button class="${x[0]===tab?"on":""}" data-t="${x[0]}"><span class="ic">${x[1]}</span><span>${esc(x[2])}${x[3]?`<span class="badge">${x[3]}</span>`:""}</span></button>`).join("");
+  $("#tabs").onclick=e=>{const b=e.target.closest("button");if(!b)return;tab=b.dataset.t;renderChrome();render();window.scrollTo(0,0)};
+}
+let reopen=null;
+function setLang(l){lang=l;const keep=tab==="add"&&$("#aName")?collectDraft():null;renderChrome();render();if(keep)restoreDraft(keep);if($("#ov").classList.contains("on")&&reopen)reopen()}
+function render(){({map:vMap,urgent:vUrgent,add:vAdd,moderate:vMod})[tab]()}
+
+/* ---------- views ---------- */
+function vMap(){
+  const all=S.sites, q=F.q.trim().toLowerCase();
+  const fs=all.filter(s=>(!q||Object.values(s.name).some(n=>String(n).toLowerCase().includes(q)))&&(F.type==="all"||s.type===F.type)&&(F.region==="all"||s.region===F.region)&&(F.status==="all"||s.status===F.status));
+  $("#main").innerHTML=`<div class="mapview"><div class="mv-left">
+  <div class="stats">
+    <div class="stat"><b>${all.length}</b><span>${t("stSites")}</span></div>
+    <div class="stat"><b style="color:var(--red)">${all.filter(s=>s.status==="red").length}</b><span>${t("stRisk")}</span></div>
+    <div class="stat"><b>${S.appeals}</b><span>${t("stAppeals")}</span></div>
+    <div class="stat"><b style="color:var(--blue)">${all.filter(s=>s.status==="blue").length}</b><span>${t("stSaved")}</span></div>
+  </div>
+  <input type="text" id="fQ" class="search" placeholder="${esc(t("search"))}" value="${esc(F.q)}">
+  <div class="filters">
+    <select id="fType"><option value="all">${t("allTypes")}</option>${Object.keys(TYPES).map(k=>`<option value="${k}" ${F.type===k?"selected":""}>${TYPES[k].icon} ${esc(tl(k))}</option>`).join("")}</select>
+    <select id="fRegion"><option value="all">${t("allRegions")}</option>${Object.keys(REGIONS).map(r=>`<option value="${r}" ${F.region===r?"selected":""}>${esc(rn(r))}</option>`).join("")}</select>
+    <select id="fStatus"><option value="all">${t("anyCond")}</option>${Object.keys(STATUS).map(k=>`<option value="${k}" ${F.status===k?"selected":""}>${esc(sl(k))}</option>`).join("")}</select>
+  </div>
+  <div class="mapwrap" id="mapw">${mapSVG(fs)}${zoomCtl()}</div>
+  <div class="legend">${Object.keys(STATUS).map(k=>`<span><i style="background:${STATUS[k].color}"></i>${esc(sl(k))}</span>`).join("")}<span>${esc(t("legendVer"))}</span><span>${esc(t("legendZoom"))}</span></div>
+  </div><div class="mv-right"><div class="list">${fs.length?fs.map(s=>`
+    <button class="item" data-id="${s.id}">${thumb(s)}<div><h3>${esc(L(s.name))}</h3>
+    <div class="meta">${TYPES[s.type].icon} ${esc(tl(s.type))} · ${esc(rn(s.region))}</div>
+    <div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">${pill(s.status)}${verified(s)?`<span class="vbadge">${t("verified")}</span>`:`<span class="meta">${t("confOf",{n:s.conf})}</span>`}</div></div></button>`).join(""):`<div class="empty">${t("noMatch")}</div>`}</div>
+  <p class="note">${t("demoNote")}</p></div></div>`;
+  ["fType","fRegion","fStatus"].forEach((id,i)=>$("#"+id).onchange=e=>{F[["type","region","status"][i]]=e.target.value;vMap()});
+  $("#fQ").oninput=e=>{F.q=e.target.value;const pos=e.target.selectionStart;vMap();const i=$("#fQ");i.focus();i.setSelectionRange(pos,pos)};
+  attachZoom($("#mapw"));
+  $("#mapw svg").onclick=e=>{if(e.currentTarget._moved>6)return;const g=e.target.closest(".pt");if(g)openSite(g.dataset.id)};
+  $("#main").querySelectorAll(".item").forEach(b=>b.onclick=()=>openSite(b.dataset.id));
+}
+
+function vUrgent(){
+  const red=S.sites.filter(s=>s.status==="red");
+  $("#main").innerHTML=`<h2>${t("urgTitle")}</h2><p class="sub">${t("urgSub")}</p>
+  <div class="grid">${red.length?red.map(s=>`<div class="urg"><div class="ph">${s.photos&&s.photos.length?`<img src="${s.photos[0]}" alt="">`:TYPES[s.type].icon}</div><div class="bd">
+    <h3>${esc(L(s.name))}</h3><div class="meta">${esc(tl(s.type))} · ${esc(rn(s.region))} · ${s.lat.toFixed(3)}, ${s.lon.toFixed(3)}</div>
+    <p>⚠️ ${esc(L(s.problem)||t("urgDefault"))}</p>
+    <div class="row"><button class="btn" data-ap="${s.id}">${t("createAppeal")}</button><button class="btn ghost" data-op="${s.id}">${t("openCard")}</button></div>
+  </div></div>`).join(""):`<div class="empty">${t("noRed")}</div>`}</div>`;
+  $("#main").querySelectorAll("[data-ap]").forEach(b=>b.onclick=()=>openAppeal(b.dataset.ap));
+  $("#main").querySelectorAll("[data-op]").forEach(b=>b.onclick=()=>openSite(b.dataset.op));
+}
+
+let draftPhotos=[];
+function vAdd(){
+  $("#main").innerHTML=`<h2>${t("tabAdd")}</h2><p class="sub">${t("addSub")}</p>
+  <div class="addview"><div class="av-map"><label class="f">${t("add1")}</label>
+  <div class="mapwrap" id="pickw">${mapSVG(S.sites,{pick,id:"pickmap",key:"pick"})}${zoomCtl()}</div>
+  <div class="meta" id="pickinfo" style="margin-top:6px">${pick?`${t("marked")} ${pick.lat.toFixed(3)}, ${pick.lon.toFixed(3)}`:t("noPoint")}</div></div>
+  <form id="addf">
+  <label class="f">${t("add2")}</label><input type="text" id="aName" placeholder="${esc(t("namePh"))}" required>
+  <div class="row"><div><label class="f">${t("type")}</label><select id="aType">${Object.keys(TYPES).map(k=>`<option value="${k}">${TYPES[k].icon} ${esc(tl(k))}</option>`).join("")}</select></div>
+  <div><label class="f">${t("region")}</label><select id="aRegion">${Object.keys(REGIONS).map(r=>`<option value="${r}">${esc(rn(r))}</option>`).join("")}</select></div></div>
+  <label class="f">${t("add3")}</label><select id="aStatus"><option value="green">🟢 ${esc(sl("green"))}</option><option value="yellow" selected>🟡 ${esc(sl("yellow"))}</option><option value="red">🔴 ${esc(sl("red"))}</option></select>
+  <label class="f">${t("add4")}</label><textarea id="aDesc" placeholder="${esc(t("descPh"))}" required></textarea>
+  <label class="f">${t("add5")}</label><input type="file" id="aPhoto" accept="image/*" multiple>
+  <div class="photos" id="aPrev">${draftPhotos.map(p=>`<img src="${p}" alt="">`).join("")}</div>
+  <label class="f">${t("yourName")}</label><input type="text" id="aAuthor" placeholder="${esc(t("optional"))}">
+  <div style="margin-top:16px"><button class="btn" type="submit">${t("send")}</button></div>
+  </form></div>`;
+  const svg=$("#pickmap");
+  attachZoom($("#pickw"));svg.style.cursor="crosshair";
+  svg.onclick=e=>{if(svg._moved>6)return;const p=svgPoint(svg,e);pick={lon:(p.x-10)/95+69,lat:43.4-p.y/128};const keep=collectDraft();vAdd();restoreDraft(keep)};
+  $("#aPhoto").onchange=async e=>{for(const f of e.target.files){draftPhotos.push(await shrink(f))}$("#aPrev").innerHTML=draftPhotos.map(p=>`<img src="${p}" alt="">`).join("")};
+  $("#addf").onsubmit=e=>{e.preventDefault();
+    if(!pick){toast(t("needPoint"));return}
+    const d=collectDraft();const nm={},ds={};nm[lang]=d.name;ds[lang]=d.desc;
+    S.pending.unshift({id:"p"+Date.now(),type:d.type,region:d.region,status:d.status,lat:pick.lat,lon:pick.lon,author:d.author||t("anon"),photos:draftPhotos.slice(),
+      name:nm,desc:ds,problem:d.status==="green"?null:ds});
+    save();pick=null;draftPhotos=[];toast(t("sent"));tab="moderate";renderChrome();render()};
+}
+function collectDraft(){return{name:$("#aName").value,type:$("#aType").value,region:$("#aRegion").value,status:$("#aStatus").value,desc:$("#aDesc").value,author:$("#aAuthor").value}}
+function restoreDraft(d){$("#aName").value=d.name;$("#aType").value=d.type;$("#aRegion").value=d.region;$("#aStatus").value=d.status;$("#aDesc").value=d.desc;$("#aAuthor").value=d.author}
+function shrink(file){return new Promise(res=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const m=480,k=Math.min(1,m/Math.max(im.width,im.height));const c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;c.getContext("2d").drawImage(im,0,0,c.width,c.height);res(c.toDataURL("image/jpeg",.72))};im.src=r.result};r.readAsDataURL(file)})}
+
+function vMod(){
+  $("#main").innerHTML=`<h2>${t("tabMod")}</h2><p class="sub">${t("modSub")}</p>
+  <div class="grid">${S.pending.length?S.pending.map(p=>`<div class="mod"><div class="top">${thumb(p)}<div><h3 style="margin:0 0 4px;font-size:16px">${esc(L(p.name))}</h3>
+    <div class="meta">${esc(tl(p.type))} · ${esc(rn(p.region))} · ${p.lat.toFixed(3)}, ${p.lon.toFixed(3)}</div><div style="margin-top:6px">${pill(p.status)}</div></div></div>
+    <p>${esc(L(p.desc))}</p><div class="meta">${t("reportedBy")} ${esc(p.author)}</div>
+    ${p.photos.length?`<div class="photos">${p.photos.map(x=>`<img src="${x}" alt="">`).join("")}</div>`:""}
+    <div class="row" style="margin-top:10px"><button class="btn teal small" data-ok="${p.id}">${t("approve")}</button><button class="btn ghost small" data-no="${p.id}">${t("reject")}</button></div></div>`).join(""):`<div class="empty">${t("queueEmpty")}</div>`}</div>
+  <div class="box"><h4>${t("demoCtl")}</h4><p class="meta" style="margin:0 0 10px">${t("demoKept")}</p><button class="btn ghost small" id="reset">${t("reset")}</button></div>`;
+  $("#main").querySelectorAll("[data-ok]").forEach(b=>b.onclick=()=>{const i=S.pending.findIndex(p=>p.id===b.dataset.ok);const p=S.pending.splice(i,1)[0];
+    S.sites.push({...p,id:"s"+Date.now(),conf:0,age:null});save();toast(t("approved"));renderChrome();vMod()});
+  $("#main").querySelectorAll("[data-no]").forEach(b=>b.onclick=()=>{S.pending=S.pending.filter(p=>p.id!==b.dataset.no);save();toast(t("rejected"));renderChrome();vMod()});
+  $("#reset").onclick=()=>{S=JSON.parse(JSON.stringify(SEED));save();for(const k in chats)delete chats[k];toast(t("resetDone"));renderChrome();vMod()};
+}
+
+/* ---------- site card ---------- */
+function openSheet(html){$("#sheet").innerHTML=html;$("#ov").classList.add("on");$("#sheet").scrollTop=0}
+function closeSheet(){$("#ov").classList.remove("on");reopen=null}
+$("#ov").onclick=e=>{if(e.target.id==="ov")closeSheet()};
+function openSite(id){
+  const s=site(id);if(!s)return;reopen=()=>openSite(id);
+  const mine=S.mine[id];
+  openSheet(`<div class="hero">${s.photos&&s.photos.length?`<img src="${s.photos[0]}" alt="">`:TYPES[s.type].icon}<button class="close" id="x">✕</button></div>
+  <div class="in">
+    <div class="meta">${TYPES[s.type].icon} ${esc(tl(s.type))} · ${esc(rfull(s.region))}</div>
+    <h2>${esc(L(s.name))}</h2>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">${pill(s.status)}${verified(s)?`<span class="vbadge">${t("verifiedBy",{n:s.conf})}</span>`:""}</div>
+    <div class="ltabs" id="lt">${LANGS.map(l=>`<button class="${l[0]===lang?"on":""}" data-l="${l[0]}">${l[2]}</button>`).join("")}</div>
+    <p class="desc">${esc(L(s.desc))}</p>
+    ${s.problem&&s.status!=="green"&&s.status!=="blue"?`<div class="problem ${s.status==="yellow"?"y":""}">⚠️ ${esc(L(s.problem))}</div>`:""}
+    ${s.status==="blue"?`<div class="problem" style="background:#D7E4F3">${t("restored")}</div>`:""}
+    <div class="kv">📍 ${s.lat.toFixed(4)}, ${s.lon.toFixed(4)}</div>
+    <a class="srclink" href="https://www.google.com/search?tbm=isch&q=${encodeURIComponent(L(s.name,"en")+" Kyrgyzstan")}" target="_blank" rel="noopener">${t("google")}</a>
+    ${s.status==="red"?`<button class="btn" id="ap" style="margin-top:8px">🚨 ${t("createAppeal")}</button>`:""}
+
+    <div class="box"><h4>${t("community")}</h4>
+      <div class="meta">${verified(s)?t("isVerified"):t("confNeed",{n:s.conf})}</div>
+      <div class="prog"><i style="width:${Math.min(100,s.conf/5*100)}%"></i></div>
+      <button class="btn teal" id="conf" ${mine?"disabled":""}>${mine?t("confDone"):t("confBtn")}</button>
+    </div>
+
+    <div class="box"><h4>${t("talk")}</h4>
+      <div class="chatlog" id="log"></div>
+      <div class="chips">${["q1","q2","q3"].map(q=>`<button class="chip" data-q="${esc(t(q))}">${esc(t(q))}</button>`).join("")}</div>
+      <form id="chatf" class="row" style="gap:6px"><input type="text" id="q" placeholder="${esc(t("askPh"))}" style="flex:3"><button class="btn small" style="flex:1">${t("ask")}</button></form>
+      <div class="meta" style="margin-top:6px">${t("onlyFacts")}</div>
+    </div>
+
+    <div class="box"><h4>${t("modUpd")}</h4>
+      <div class="row"><select id="st">${Object.keys(STATUS).map(k=>`<option value="${k}" ${k===s.status?"selected":""}>${esc(sl(k))}</option>`).join("")}</select><button class="btn ghost small" id="stb" style="flex:0 0 auto">${t("save")}</button></div>
+    </div>
+  </div>`);
+  $("#x").onclick=closeSheet;
+  $("#lt").onclick=e=>{const b=e.target.closest("button");if(!b)return;setLang(b.dataset.l)};
+  if($("#ap"))$("#ap").onclick=()=>openAppeal(id);
+  $("#conf").onclick=()=>{s.conf++;S.mine[id]=1;save();toast(s.conf===5?t("nowVer"):t("thanksConf"));render();openSite(id)};
+  $("#stb").onclick=()=>{s.status=$("#st").value;save();toast(s.status==="blue"?t("markedSaved"):s.status==="red"?t("movedUrgent"):t("condUpd"));renderChrome();render();openSite(id)};
+  drawChat(id);
+  $("#sheet").querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>ask(id,b.dataset.q));
+  $("#chatf").onsubmit=e=>{e.preventDefault();const q=$("#q").value.trim();if(q){$("#q").value="";ask(id,q)}};
+}
+function drawChat(id){const log=$("#log");if(!log)return;const m=chats[id]||[];
+  log.innerHTML=m.length?m.map(x=>`<div class="${x.r==="u"?"bu":"bm"}">${esc(x.t)}</div>`).join(""):`<div class="bm">${esc(t("greet",{name:L(site(id).name)}))}</div>`;log.scrollTop=log.scrollHeight}
+function facts(s){return [`Name: ${L(s.name,"en")} (Russian: ${L(s.name,"ru")}; Kyrgyz: ${L(s.name,"ky")}; Chinese: ${L(s.name,"zh")})`,`Type: ${L(TYPES[s.type].lab,"en")}`,`Location: ${s.region} region, Kyrgyzstan; coordinates ${s.lat.toFixed(3)}, ${s.lon.toFixed(3)}`,
+  `Description: ${L(s.desc,"en")}`,s.age?`Age: ${L(s.age,"en")}`:"Age: unknown",`Current condition (community reports): ${L(STATUS[s.status].lab,"en")}${s.problem&&s.status!=="green"?"; "+L(s.problem,"en"):""}`,`Confirmed by ${s.conf} visitors`].join("\n- ")}
+async function ask(id,q){
+  const s=site(id);chats[id]=chats[id]||[];chats[id].push({r:"u",t:q});chats[id].push({r:"m",t:"…"});drawChat(id);
+  const m=chats[id], last=m[m.length-1];
+  if(sampleFn){
+    const hist=m.slice(0,-2).map(x=>(x.r==="u"?"Visitor: ":"Monument: ")+x.t).join("\n");
+    const prompt=`You are the historical monument "${L(s.name,"en")}" in Kyrgyzstan. Speak in the first person, warmly and simply, to a visitor.
+Rules: use ONLY the facts below. If they don't answer the question, say you don't know that yet. Never invent dates, names or numbers. Reply in the same language as the visitor's last message (Kyrgyz, Russian, English or Chinese). At most 3 short sentences. Plain text only.
+Facts:
+- ${facts(s)}
+${hist?"Conversation so far:\n"+hist+"\n":""}Visitor: ${q}
+Monument:`;
+    try{const r=await sampleFn(prompt,{modelTier:"quick",cache:false,onText:({text})=>{last.t=text;drawChat(id)}});last.t=(r.text||last.t).trim();drawChat(id);return}
+    catch(e){/* fall back to offline answer */}
+  }
+  last.t=offline(s,q);drawChat(id);
+}
+const OFF={
+  age:{en:"About my age: {a}. {d}",ru:"Мой возраст: {a}. {d}",ky:"Менин жашым: {a}. {d}",zh:"关于我的年龄：{a}。{d}"},
+  noAge:{en:"my card doesn’t say yet",ru:"в моей карточке этого пока нет",ky:"баракчамда азырынча жок",zh:"我的卡片上还没有记录"},
+  build:{en:"{d} My card doesn’t say more about who built me yet.",ru:"{d} Больше о том, кто меня построил, в моей карточке пока нет.",ky:"{d} Мени ким курганы тууралуу баракчамда азырынча маалымат жок.",zh:"{d}关于是谁建造了我，我的卡片上还没有更多信息。"},
+  cond:{en:"Right now my condition is: {c}. {p}",ru:"Сейчас моё состояние: {c}. {p}",ky:"Азыр менин абалым: {c}. {p}",zh:"我现在的状况：{c}。{p}"},
+  other:{en:"{d} My card doesn’t have an answer to that yet.",ru:"{d} Об этом в моей карточке пока ничего нет.",ky:"{d} Бул тууралуу баракчамда азырынча маалымат жок.",zh:"{d}我的卡片上还没有这个问题的答案。"}
+};
+function offline(s,q){
+  const x=q.toLowerCase();
+  const lg=/[一-鿿]/.test(x)?"zh":/[а-яёөүң]/.test(x)?((lang==="ky"||/[өүң]/.test(x))?"ky":"ru"):"en";
+  const f=(k,v)=>{let r=OFF[k][lg]||OFF[k].en;for(const n in v)r=r.split("{"+n+"}").join(v[n]);return r.trim()};
+  const d=L(s.desc,lg), p=s.problem&&s.status!=="green"?L(s.problem,lg):"";
+  if(/old|age|year|лет|возраст|жаш|多大|年龄/.test(x))return f("age",{a:s.age?L(s.age,lg):OFF.noAge[lg],d});
+  if(/built|who|made|построил|кто|ким|курган|建/.test(x))return f("build",{d});
+  if(/happen|condition|state|состоян|происход|абал|эмне болуп|怎么样|状况/.test(x))return f("cond",{c:L(STATUS[s.status].lab,lg).toLowerCase(),p});
+  return f("other",{d});
+}
+
+/* ---------- appeal ---------- */
+function appealText(s,o){
+  const n=(s.photos||[]).length;
+  const date=new Date().toLocaleDateString(o.lang==="en"?"en-GB":"ru-RU");
+  const link=({ru:"[ссылка на карточку объекта]",ky:"[объекттин баракчасына шилтеме]"}[o.lang]||"[link to site card]"), coords=`${s.lat.toFixed(5)}, ${s.lon.toFixed(5)}`;
+  const nm=L(s.name,o.lang);
+  const pr=(s.problem&&(s.problem[o.lang]||s.problem.ru||s.problem.en||Object.values(s.problem)[0]))||"";
+  const who=o.applicant||"____________";
+  if(o.lang==="ru"){const rec=o.to==="min"?"Министерство культуры Кыргызской Республики":`Местная администрация (${REGIONS[s.region][0]} область)`;
+    return `В ${rec}\nот ${who}\n\nОБРАЩЕНИЕ\nо необходимости защиты объекта историко-культурного наследия\n\nСообщаю, что объект «${nm}» (${TYPES[s.type].ru}), расположенный: ${REGIONS[s.region][0]} область, координаты ${coords}, находится в состоянии, угрожающем его сохранности.\n\nОписание проблемы: ${pr}\n\nСостояние объекта подтверждено пользователями платформы «Забытые места» (${s.conf} подтверждений). Фотографии прилагаются (${n} шт.). Карточка объекта: ${link}\n\nПрошу провести осмотр объекта, принять меры по его сохранению и сообщить о принятых мерах.\n\nДата: ${date}\nПодпись: ____________`}
+  if(o.lang==="ky"){const rec=o.to==="min"?"Кыргыз Республикасынын Маданият министрлигине":`Жергиликтүү администрацияга (${REGIONS[s.region][1]} облусу)`;
+    return `${rec}\n${who} тарабынан\n\nКАЙРЫЛУУ\nтарыхый-маданий мурас объектисин коргоо зарылдыгы жөнүндө\n\n«${nm}» (${TYPES[s.type].ky}) объектиси, жайгашкан жери: ${REGIONS[s.region][1]} облусу, координаттары ${coords}, сакталышына коркунуч туудурган абалда экенин билдирем.\n\nКөйгөйдүн сүрөттөмөсү: ${pr}\n\nОбъектинин абалын «Унутулган жерлер» платформасынын колдонуучулары тастыктаган (${s.conf} тастыктоо). Сүрөттөр тиркелет (${n} даана). Объектинин баракчасы: ${link}\n\nОбъектини текшерип, аны сактоо боюнча чара көрүүнү жана көрүлгөн чаралар тууралуу маалымдоону суранам.\n\nКүнү: ${date}\nКолу: ____________`}
+  const rec=o.to==="min"?"Ministry of Culture of the Kyrgyz Republic":`Local administration (${s.region} region)`;
+  return `To: ${rec}\nFrom: ${who}\n\nAPPEAL\non the need to protect a cultural heritage site\n\nI am reporting that the site “${nm}” (${L(TYPES[s.type].lab,"en").toLowerCase()}), located in ${s.region} region, coordinates ${coords}, is in a condition that threatens its preservation.\n\nProblem: ${pr}\n\nThe condition has been confirmed by users of the Forgotten Places platform (${s.conf} confirmations). Photos attached: ${n}. Site card: ${link}\n\nI ask you to inspect the site, take measures to preserve it, and inform me of the measures taken.\n\nDate: ${date}\nSignature: ____________`;
+}
+function openAppeal(id){
+  const s=site(id);
+  const o={lang:lang==="ky"?"ky":lang==="en"?"en":"ru",to:"min",applicant:""};
+  S.appeals++;save();render();
+  const draw=()=>{
+    reopen=draw;
+    const txt=appealText(s,o);
+    openSheet(`<div class="in" style="position:relative"><button class="close" id="x" style="top:12px">✕</button>
+      <div class="meta">${t("offAppeal")}</div><h2 style="padding-right:40px">${esc(L(s.name))}</h2>
+      <div class="row"><div><label class="f">${t("to")}</label><select id="to"><option value="min" ${o.to==="min"?"selected":""}>${t("ministry")}</option><option value="loc" ${o.to==="loc"?"selected":""}>${t("localAdm")}</option></select></div>
+      <div><label class="f">${t("letterLang")}</label><select id="al"><option value="ru" ${o.lang==="ru"?"selected":""}>Русский</option><option value="ky" ${o.lang==="ky"?"selected":""}>Кыргызча</option><option value="en" ${o.lang==="en"?"selected":""}>English</option></select></div></div>
+      <label class="f">${t("yourName")}</label><input type="text" id="who" value="${esc(o.applicant)}" placeholder="${esc(t("fullName"))}">
+      <label class="f">${t("ready")}</label><div class="appeal">${esc(txt)}</div>
+      <div class="row" style="margin-top:12px"><button class="btn" id="cp">${t("copy")}</button>${downloads?`<button class="btn teal" id="dl">${t("download")}</button>`:""}</div>
+      <a class="btn ghost" style="display:block;text-align:center;text-decoration:none;margin-top:8px" href="mailto:?subject=${encodeURIComponent((o.lang==="en"?"Appeal: ":o.lang==="ky"?"Кайрылуу: ":"Обращение: ")+L(s.name,o.lang))}&body=${encodeURIComponent(txt)}">${t("email")}</a>
+      <p class="note">${t("emailNote")}</p></div>`);
+    $("#x").onclick=closeSheet;
+    $("#to").onchange=e=>{o.to=e.target.value;draw()};
+    $("#al").onchange=e=>{o.lang=e.target.value;draw()};
+    $("#who").onchange=e=>{o.applicant=e.target.value;draw()};
+    $("#cp").onclick=async()=>{try{await navigator.clipboard.writeText(appealText(s,o));toast(t("copied"))}catch(e){toast(t("copyFail"))}};
+    if($("#dl"))$("#dl").onclick=async()=>{
+      const html=`<html><head><meta charset="utf-8"></head><body style="font-family:'Times New Roman';font-size:14pt;white-space:pre-wrap">${esc(appealText(s,o))}</body></html>`;
+      try{await downloads.save({filename:`appeal-${s.id}.doc`,data:html});toast(t("savedFile"))}catch(e){toast(t("dlFail"))}};
+  };
+  draw();toast(t("appealCreated"));
+}
+
+renderChrome();render();
+
+</script>
+</body>
+</html>
